@@ -1,16 +1,30 @@
-plot4 <- function() {
-     par(mfrow=c(2,2))     
-         plot(df$timestamp,df$Global_active_power, type="l", xlab="", ylab="Global Active Power")
-          plot(df$timestamp,df$Voltage, type="l", xlab="datetime", ylab="Voltage")
-       
-     plot(df$timestamp,df$Sub_metering_1, type="l", xlab="", ylab="Energy sub metering")
-     lines(df$timestamp,df$Sub_metering_2,col="red")
-    lines(df$timestamp,df$Sub_metering_3,col="blue")
-    legend("topright", col=c("black","red","blue"), c("Sub_metering_1  ","Sub_metering_2  ", "Sub_metering_3  "),lty=c(1,1), bty="n", cex=.5) #bty removes the box, cex shrinks the text, spacing added after labels so it renders correctly
-       
-     plot(df$timestamp,df$Global_reactive_power, type="l", xlab="datetime", ylab="Global_reactive_power")
-              dev.copy(png, file="plot4.png", width=480, height=480)
-     dev.off()
-     cat("plot4.png has been saved in", getwd())
- }
-> plot4()
+CoalCombustionSCC <- subset(SCC, EI.Sector %in% c("Fuel Comb - 
+                            Comm/Institutional - Coal",
+                            "Fuel Comb - Electric Generation - Coal",
+                            "Fuel Comb - Industrial Boilers, ICEs - Coal"))
+
+CoalCombustionSCC1 <- subset(SCC, grepl("Comb", Short.Name) & grepl("Coal", 
+                             Short.Name))
+
+nrow(CoalCombustionSCC)
+
+nrow(CoalCombustionSCC1)
+
+d3 <- setdiff(CoalCombustionSCC$SCC, CoalCombustionSCC1$SCC)
+d4 <- setdiff(CoalCombustionSCC1$SCC, CoalCombustionSCC$SCC)
+length(d3)
+
+length(d4)
+
+CoalCombustionSCCCodes <- union(CoalCombustionSCC$SCC, CoalCombustionSCC1$SCC)
+length(CoalCombustionSCCCodes)
+CoalCombustion <- subset(NEI, SCC %in% CoalCombustionSCCCodes)
+
+coalCombustionPM25ByYear <- ddply(CoalCombustion, .(year, type), function(x) 
+                                  sum(x$Emissions))
+colnames(coalCombustionPM25ByYear)[3] <- "Emissions"
+
+qplot(year, Emissions, data = coalCombustionPM25ByYear, color = type, 
+      geom = "line") + ggtitle(expression("Coal Combustion" ~ PM[2.5] ~ 
+      "Emissions by Source Type and Year")) + xlab("Year") + 
+      ylab(expression  ("Total" ~ PM[2.5] ~ "Emissions (tons)"))

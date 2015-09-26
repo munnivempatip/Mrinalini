@@ -1,10 +1,7 @@
-plot3 <- function() {
-   plot(df$timestamp,df$Sub_metering_1, type="l", xlab="", ylab="Energy sub metering")
-     lines(df$timestamp,df$Sub_metering_2,col="red")
-     lines(df$timestamp,df$Sub_metering_3,col="blue")
-     legend("topright", col=c("black","red","blue"), c("Sub_metering_1  ","Sub_metering_2  ", "Sub_metering_3  "),lty=c(1,1), lwd=c(1,1))
-     dev.copy(png, file="plot3.png", width=480, height=480)
-     dev.off()
-     cat("plot3.png has been saved in", getwd())
- }
- plot3()
+typePM25ByYear <- ddply(BaltimoreCity, .(year, type), function(x) sum(x$Emissions))
+colnames(typePM25ByYear)[3] <- "Emissions"
+
+qplot(year, Emissions, data = typePM25ByYear, color = type, geom = "line") +
+      ggtitle(expression("Baltimore City" ~ PM[2.5] ~ 
+      "Emissions by Source Type and Year")) + xlab("Year") +
+      ylab(expression("Total" ~ PM[2.5] ~ "Emissions (tons)"))
